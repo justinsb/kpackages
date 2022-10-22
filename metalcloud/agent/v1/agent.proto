@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package agent.v1;
+
+option go_package = "github.com/justinsb/metalcloud/agent/v1;agentv1";
+
+// The agent service definition
+service AgentService {
+  rpc Ping (PingRequest) returns (PingResponse) {}
+
+  // Exec runs a command and returns the output, with no streaming.
+  rpc Exec (ExecRequest) returns (ExecResponse) {}
+
+  // WriteFile writes a file to disk.
+//  rpc WriteFile (WriteFileRequest) returns (WriteFileResponse) {}
+}
+
+message PingRequest {
+}
+
+message PingResponse {
+}
+
+
+message ExecRequest {
+  repeated string args = 1;
+}
+
+message ExecResponse {
+  int32 exit_code = 1;
+  bytes stdout = 2;
+  bytes stderr = 3;
+}
+
+

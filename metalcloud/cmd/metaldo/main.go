@@ -19,7 +19,7 @@ func main() {
 }
 
 func run(ctx context.Context) error {
-	connectTo := "127.0.0.1:8080"
+	connectTo := "10.78.78.32:8080"
 	conn, err := grpc.Dial(connectTo, grpc.WithBlock(), grpc.WithInsecure())
 	if err != nil {
 		return fmt.Errorf("failed to connect to service on %s: %w", connectTo, err)

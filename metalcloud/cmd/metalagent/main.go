@@ -34,7 +34,7 @@ func run(ctx context.Context) error {
 			if err != nil {
 				log.Printf("poll gave error %v", err)
 			}
-			time.Sleep(10 * time.Second)
+			time.Sleep(1 * time.Minute)
 		}
 	}()
 

@@ -1,0 +1,8 @@
+[Unit]
+Description=Run agent
+
+[Service]
+ExecStart=/sbin/metalagent
+
+[Install]
+WantedBy=multi-user.target

@@ -16,3 +16,6 @@ popd
 mkdir -p bin/
 GOBIN=`pwd`/bin/ go install go.universe.tf/netboot/cmd/pixiecore@latest
 
+mkdir -p bin/
+GOBIN=`pwd`/bin CGO_ENABLED=0 go install github.com/google/go-containerregistry/cmd/crane@latest
+

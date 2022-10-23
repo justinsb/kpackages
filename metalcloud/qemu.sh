@@ -3,23 +3,7 @@
 set -e
 set -x
 
-mkdir -p netboot/initrd
-
-CGO_ENABLED=0 go build -o netboot/initrd/init ./cmd/metalagent
-
-rm -rf netboot/initrd/bin/
-mkdir -p netboot/initrd/bin/
-cp netboot/busybox/busybox netboot/initrd/bin/busybox
-
-
-mkdir -p netboot/initrd/usr/share/udhcpc
-cp netboot/busybox/examples/udhcp/simple.* netboot/initrd/usr/share/udhcpc/
-
-pushd netboot/initrd
-#find . | cpio -ov --format=newc | gzip -9 >../initramfz
-#find . -print0 | cpio --null -ov --format=newc | gzip -n >../initramfz
-find . -print0 | cpio --null -ov --format=newc  >../initramfz
-popd
+./build.sh
 
 
 qemu-system-x86_64  \

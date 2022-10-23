@@ -11,6 +11,9 @@ service AgentService {
   // Exec runs a command and returns the output, with no streaming.
   rpc Exec (ExecRequest) returns (ExecResponse) {}
 
+  // ExecStreaming runs a command and returns the output, with no streaming.
+  rpc ExecStreaming (stream ExecStreamingRequest) returns (stream ExecStreamingResponse) {}
+
   // WriteFile writes a file to disk.
 //  rpc WriteFile (WriteFileRequest) returns (WriteFileResponse) {}
 }
@@ -23,11 +26,40 @@ message PingResponse {
 
 
 message ExecRequest {
-  repeated string args = 1;
+  CommandExecution exec = 1;
+
+  bytes stdin = 2;
 }
 
-message ExecResponse {
+
+
+message ExitInfo {
   int32 exit_code = 1;
+}
+
+
+message ExecResponse {
+  ExitInfo exit_info = 1;
+  bytes stdout = 2;
+  bytes stderr = 3;
+}
+
+
+message CommandExecution {
+  repeated string args = 1;
+  string chroot = 2;
+
+  bool replace = 3;
+}
+
+message ExecStreamingRequest {
+  CommandExecution exec = 1;
+
+  bytes stdin = 2;
+}
+
+message ExecStreamingResponse {
+  ExitInfo exit_info = 1;
   bytes stdout = 2;
   bytes stderr = 3;
 }

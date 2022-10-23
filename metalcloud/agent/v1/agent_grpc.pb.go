@@ -21,6 +21,8 @@ type AgentServiceClient interface {
 	Ping(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingResponse, error)
 	// Exec runs a command and returns the output, with no streaming.
 	Exec(ctx context.Context, in *ExecRequest, opts ...grpc.CallOption) (*ExecResponse, error)
+	// ExecStreaming runs a command and returns the output, with no streaming.
+	ExecStreaming(ctx context.Context, opts ...grpc.CallOption) (AgentService_ExecStreamingClient, error)
 }
 
 type agentServiceClient struct {
@@ -49,6 +51,37 @@ func (c *agentServiceClient) Exec(ctx context.Context, in *ExecRequest, opts ...
 	return out, nil
 }
 
+func (c *agentServiceClient) ExecStreaming(ctx context.Context, opts ...grpc.CallOption) (AgentService_ExecStreamingClient, error) {
+	stream, err := c.cc.NewStream(ctx, &AgentService_ServiceDesc.Streams[0], "/agent.v1.AgentService/ExecStreaming", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &agentServiceExecStreamingClient{stream}
+	return x, nil
+}
+
+type AgentService_ExecStreamingClient interface {
+	Send(*ExecStreamingRequest) error
+	Recv() (*ExecStreamingResponse, error)
+	grpc.ClientStream
+}
+
+type agentServiceExecStreamingClient struct {
+	grpc.ClientStream
+}
+
+func (x *agentServiceExecStreamingClient) Send(m *ExecStreamingRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *agentServiceExecStreamingClient) Recv() (*ExecStreamingResponse, error) {
+	m := new(ExecStreamingResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // AgentServiceServer is the server API for AgentService service.
 // All implementations must embed UnimplementedAgentServiceServer
 // for forward compatibility
@@ -56,6 +89,8 @@ type AgentServiceServer interface {
 	Ping(context.Context, *PingRequest) (*PingResponse, error)
 	// Exec runs a command and returns the output, with no streaming.
 	Exec(context.Context, *ExecRequest) (*ExecResponse, error)
+	// ExecStreaming runs a command and returns the output, with no streaming.
+	ExecStreaming(AgentService_ExecStreamingServer) error
 	mustEmbedUnimplementedAgentServiceServer()
 }
 
@@ -68,6 +103,9 @@ func (UnimplementedAgentServiceServer) Ping(context.Context, *PingRequest) (*Pin
 }
 func (UnimplementedAgentServiceServer) Exec(context.Context, *ExecRequest) (*ExecResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Exec not implemented")
+}
+func (UnimplementedAgentServiceServer) ExecStreaming(AgentService_ExecStreamingServer) error {
+	return status.Errorf(codes.Unimplemented, "method ExecStreaming not implemented")
 }
 func (UnimplementedAgentServiceServer) mustEmbedUnimplementedAgentServiceServer() {}
 
@@ -118,6 +156,32 @@ func _AgentService_Exec_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AgentService_ExecStreaming_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(AgentServiceServer).ExecStreaming(&agentServiceExecStreamingServer{stream})
+}
+
+type AgentService_ExecStreamingServer interface {
+	Send(*ExecStreamingResponse) error
+	Recv() (*ExecStreamingRequest, error)
+	grpc.ServerStream
+}
+
+type agentServiceExecStreamingServer struct {
+	grpc.ServerStream
+}
+
+func (x *agentServiceExecStreamingServer) Send(m *ExecStreamingResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *agentServiceExecStreamingServer) Recv() (*ExecStreamingRequest, error) {
+	m := new(ExecStreamingRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // AgentService_ServiceDesc is the grpc.ServiceDesc for AgentService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -134,6 +198,13 @@ var AgentService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _AgentService_Exec_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "ExecStreaming",
+			Handler:       _AgentService_ExecStreaming_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
+		},
+	},
 	Metadata: "agent/v1/agent.proto",
 }

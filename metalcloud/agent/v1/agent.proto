@@ -56,6 +56,8 @@ message ExecStreamingRequest {
   CommandExecution exec = 1;
 
   bytes stdin = 2;
+
+  bool close_stdin = 3;
 }
 
 message ExecStreamingResponse {

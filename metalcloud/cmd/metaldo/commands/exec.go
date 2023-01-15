@@ -35,13 +35,16 @@ func AddExecCommand(parent *cobra.Command, rootOptions *RootOptions) {
 		opt.Stdin = make(chan []byte)
 		go func() {
 			buf := make([]byte, 4096)
-			if n, err := os.Stdin.Read(buf); err != nil {
-				close(opt.Stdin)
-				log.Printf("error reading from stdin: %v", err)
-			} else if n != 0 {
-				c := make([]byte, n)
-				copy(c, buf[:n])
-				opt.Stdin <- c
+			for {
+				if n, err := os.Stdin.Read(buf); err != nil {
+					close(opt.Stdin)
+					log.Printf("error reading from stdin (n=%d): %v", n, err)
+					return
+				} else if n != 0 {
+					c := make([]byte, n)
+					copy(c, buf[:n])
+					opt.Stdin <- c
+				}
 			}
 		}()
 		return RunExecCommand(cmd.Context(), opt)
@@ -105,6 +108,14 @@ func RunExecCommand(ctx context.Context, opt ExecOptions) error {
 			select {
 			case b, ok := <-opt.Stdin:
 				if !ok {
+
+					req := &agentv1.ExecStreamingRequest{
+						CloseStdin: true,
+					}
+					if err := stream.Send(req); err != nil {
+						errorChan <- err
+						return
+					}
 					errorChan <- nil
 					return
 				}

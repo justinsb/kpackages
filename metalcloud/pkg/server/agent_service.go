@@ -182,6 +182,14 @@ func (s *agentService) ExecStreaming(stream pb.AgentService_ExecStreamingServer)
 					return
 				}
 			}
+			if req.CloseStdin {
+				if err := stdin.Close(); err != nil {
+					errorChan <- fmt.Errorf("error closing stdin: %w", err)
+					return
+				} else {
+					errorChan <- nil
+				}
+			}
 		}
 	}()
 

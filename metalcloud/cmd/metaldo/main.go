@@ -26,6 +26,7 @@ func run(ctx context.Context) error {
 	root.SilenceUsage = true
 	root.PersistentFlags().StringVar(&rootOptions.Host, "host", rootOptions.Host, "host to connect to")
 
+	commands.AddCopyFileCommand(root, &rootOptions)
 	commands.AddExecCommand(root, &rootOptions)
 	commands.AddPingCommand(root, &rootOptions)
 

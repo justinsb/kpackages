@@ -29,7 +29,21 @@ func (s *agentService) Ping(ctx context.Context, req *pb.PingRequest) (*pb.PingR
 	return &pb.PingResponse{}, nil
 }
 
-// Exec serves the ping service method
+// WriteFile writes a file to the filesystem.
+func (s *agentService) WriteFile(ctx context.Context, req *pb.WriteFileRequest) (*pb.WriteFileResponse, error) {
+	p := req.GetPath()
+	if p == "" {
+		return nil, fmt.Errorf("field path is required")
+	}
+
+	if err := os.WriteFile(p, req.GetContents(), os.FileMode(req.GetFileMode())); err != nil {
+		return nil, fmt.Errorf("writing file %q: %w", p, err)
+	}
+
+	return &pb.WriteFileResponse{}, nil
+}
+
+// Exec serves the exec service method
 func (s *agentService) Exec(ctx context.Context, req *pb.ExecRequest) (*pb.ExecResponse, error) {
 	args := req.GetExec().GetArgs()
 	if len(args) == 0 {

@@ -23,6 +23,8 @@ type AgentServiceClient interface {
 	Exec(ctx context.Context, in *ExecRequest, opts ...grpc.CallOption) (*ExecResponse, error)
 	// ExecStreaming runs a command and returns the output, with no streaming.
 	ExecStreaming(ctx context.Context, opts ...grpc.CallOption) (AgentService_ExecStreamingClient, error)
+	// WriteFile writes a file to disk.
+	WriteFile(ctx context.Context, in *WriteFileRequest, opts ...grpc.CallOption) (*WriteFileResponse, error)
 }
 
 type agentServiceClient struct {
@@ -82,6 +84,15 @@ func (x *agentServiceExecStreamingClient) Recv() (*ExecStreamingResponse, error)
 	return m, nil
 }
 
+func (c *agentServiceClient) WriteFile(ctx context.Context, in *WriteFileRequest, opts ...grpc.CallOption) (*WriteFileResponse, error) {
+	out := new(WriteFileResponse)
+	err := c.cc.Invoke(ctx, "/agent.v1.AgentService/WriteFile", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AgentServiceServer is the server API for AgentService service.
 // All implementations must embed UnimplementedAgentServiceServer
 // for forward compatibility
@@ -91,6 +102,8 @@ type AgentServiceServer interface {
 	Exec(context.Context, *ExecRequest) (*ExecResponse, error)
 	// ExecStreaming runs a command and returns the output, with no streaming.
 	ExecStreaming(AgentService_ExecStreamingServer) error
+	// WriteFile writes a file to disk.
+	WriteFile(context.Context, *WriteFileRequest) (*WriteFileResponse, error)
 	mustEmbedUnimplementedAgentServiceServer()
 }
 
@@ -106,6 +119,9 @@ func (UnimplementedAgentServiceServer) Exec(context.Context, *ExecRequest) (*Exe
 }
 func (UnimplementedAgentServiceServer) ExecStreaming(AgentService_ExecStreamingServer) error {
 	return status.Errorf(codes.Unimplemented, "method ExecStreaming not implemented")
+}
+func (UnimplementedAgentServiceServer) WriteFile(context.Context, *WriteFileRequest) (*WriteFileResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method WriteFile not implemented")
 }
 func (UnimplementedAgentServiceServer) mustEmbedUnimplementedAgentServiceServer() {}
 
@@ -182,6 +198,24 @@ func (x *agentServiceExecStreamingServer) Recv() (*ExecStreamingRequest, error) 
 	return m, nil
 }
 
+func _AgentService_WriteFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(WriteFileRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AgentServiceServer).WriteFile(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/agent.v1.AgentService/WriteFile",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AgentServiceServer).WriteFile(ctx, req.(*WriteFileRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AgentService_ServiceDesc is the grpc.ServiceDesc for AgentService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -196,6 +230,10 @@ var AgentService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Exec",
 			Handler:    _AgentService_Exec_Handler,
+		},
+		{
+			MethodName: "WriteFile",
+			Handler:    _AgentService_WriteFile_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

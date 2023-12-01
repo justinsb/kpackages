@@ -15,13 +15,23 @@ service AgentService {
   rpc ExecStreaming (stream ExecStreamingRequest) returns (stream ExecStreamingResponse) {}
 
   // WriteFile writes a file to disk.
-//  rpc WriteFile (WriteFileRequest) returns (WriteFileResponse) {}
+  rpc WriteFile (WriteFileRequest) returns (WriteFileResponse) {}
 }
 
 message PingRequest {
 }
 
 message PingResponse {
+}
+
+
+message WriteFileRequest {
+  string path = 1;
+  bytes contents = 2;
+  int32 file_mode = 3;
+}
+
+message WriteFileResponse {
 }
 
 

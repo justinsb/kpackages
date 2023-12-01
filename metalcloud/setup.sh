@@ -132,6 +132,10 @@ go run ./cmd/metaldo exec -- /bin/mount -t ext4 /dev/pool/root0 /mnt
 go run ./cmd/metaldo exec -- /bin/ls /mnt
 go run ./cmd/metaldo exec -- /bin/ls /mnt/sbin
 
+# Copy modules so we have the right modules
+# TODO: Should we bother installing the kernel?
+go run ./cmd/metaldo exec -- /bin/cp -r /usr/lib/modules/6.1.0-13-amd64/ /mnt/usr/lib/modules/
+
 # remove password on root account
 go run ./cmd/metaldo exec --chroot /mnt -- /usr/bin/passwd -d root
 
@@ -146,15 +150,50 @@ go run ./cmd/metaldo exec -- /bin/hostname lenovo920q-1
 
 sleep 10; go run ./cmd/metaldo exec --replace -- /bin/switch_root /mnt /sbin/init
 
-# TODO: hostname
-# TODO: add ssh key?
-# TODO: turn off swap / repartition?
+# Set ssh key
+# TODO: Use cp command?
+go run ./cmd/metaldo exec mkdir /root/.ssh/
+cat ~/.ssh/id_ed25519.pub | go run ./cmd/metaldo exec tee /root/.ssh/authorized_keys
+
+# Set hostname
+echo "lenovo920q-1" | go run ./cmd/metaldo exec tee /etc/hostname
+go run ./cmd/metaldo exec -- hostname -F /etc/hostname
+
+# Turn off swap
+# TODO: Is there any swap?  if so, should we repartition?
+go run ./cmd/metaldo exec -- swapon --summary
+go run ./cmd/metaldo exec -- swapoff --all
+
+# Switch to the correct kernel
+# # TODO: Maybe easier to just install a bootloader?
+# go run ./cmd/metaldo exec -- apt-get install --yes kexec-tools
+# go run ./cmd/metaldo exec -- /sbin/kexec -l /boot/vmlinuz-5.10.0-26-amd64 --initrd=/boot/initrd.img-5.10.0-26-amd64
+#go run ./cmd/metaldo exec -- apt-get install --yes grub-efi
+# go run ./cmd/metaldo exec -- apt-get install --yes grub
+# go run ./cmd/metaldo exec -- grub2-mkconfig -o /boot/grub2/grub.cfg
+# go run ./cmd/metaldo exec -- grub2-install /dev/nvme0
+
 
 # Create thinpool for volumes
 #	// Must precreate thinpool with: lvcreate -L 200G -T pool/thinpool
+go run ./cmd/metaldo exec -- lvcreate -L 200G -T pool/thinpool
 #	// Can extend with e.g. /sbin/lvextend -L 20G pool/thinpool
-# go run ./cmd/metaldo exec --chroot /lvm2/rootfs -- /sbin/vgscan -vvvv --mknodes
-# or go run ./cmd/metaldo exec -- /sbin/vgscan -vvvv --mknodes
+go run ./cmd/metaldo exec -- /sbin/vgscan --mknodes
+go run ./cmd/metaldo exec --chroot /lvm2/rootfs -- /sbin/vgscan  --mknodes
 # must run vgchange -a y ?
 # get error: /usr/sbin/thin_check: execvp failed: No such file or directory
 # go run ./cmd/metaldo exec -- apt install --yes thin-provisioning-tools
+
+# We need wget (or curl) for kOps
+go run ./cmd/metaldo exec -- apt-get install --yes wget
+
+# We need reasonably accurate time for certificate sigining etc
+# chrony vs systemd-timesyncd: systemd-timesyncd is smaller/faster, but less accurate.
+# kOps already uses chrony, so we want to stick with that for now.
+go run ./cmd/metaldo exec -- apt-get install --yes chrony
+go run ./cmd/metaldo exec -- systemctl status chrony
+# Maybe we need to set the time once in case of too much drift?
+
+
+# Add keys?
+#cat ~/.ssh/authorized_keys | ssh root@10.78.79.73 tee -a /root/.ssh/authorized_keys

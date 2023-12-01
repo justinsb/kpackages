@@ -69,7 +69,7 @@ func LoadModulesDep() (*ModulesDep, error) {
 
 	modules := make(map[string]*moduleInfo)
 
-	baseDir := filepath.Join("/lib", "modules", kernelVersion)
+	baseDir := filepath.Join("/usr/lib", "modules", kernelVersion)
 	p := filepath.Join(baseDir, "modules.dep")
 	f, err := os.Open(p)
 	if err != nil {
@@ -94,12 +94,16 @@ func LoadModulesDep() (*ModulesDep, error) {
 		moduleName := filepath.Base(modulePath)
 		moduleName = strings.TrimSuffix(moduleName, ".ko")
 
+		// TODO: Modules map - to _; is this hard-coded?
+		moduleName = strings.ReplaceAll(moduleName, "-", "_")
+
 		info := &moduleInfo{
 			path: modulePath,
 		}
 		for _, dep := range tokens[1:] {
 			name := filepath.Base(dep)
 			name = strings.TrimSuffix(name, ".ko")
+			name = strings.ReplaceAll(name, "-", "_")
 
 			info.dependencies = append(info.dependencies, name)
 		}

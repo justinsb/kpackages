@@ -142,7 +142,7 @@ func poll(ctx context.Context) error {
 
 			// TODO: load modules.aliases once
 
-			aliases := filepath.Join("/lib", "modules", kernelVersion, "modules.alias")
+			aliases := filepath.Join("/usr/lib", "modules", kernelVersion, "modules.alias")
 			f, err := os.Open(aliases)
 			if err != nil {
 				return fmt.Errorf("error opening %q: %w", aliases, err)

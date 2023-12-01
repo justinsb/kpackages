@@ -7,6 +7,13 @@ ar xf linux-image-5.10.0-18-amd64_5.10.140-1_amd64.deb
 tar xf data.tar.xz
 popd
 
+# mkdir -p packages/kmod
+# pushd packages/kmod
+# apt-get download kmod
+# ar xf kmod*.deb
+# tar xf data.tar.xz
+# popd
+
 git clone git://busybox.net/busybox.git
 pushd busybox
 make defconfig
@@ -19,3 +26,6 @@ GOBIN=`pwd`/bin/ go install go.universe.tf/netboot/cmd/pixiecore@latest
 mkdir -p bin/
 GOBIN=`pwd`/bin CGO_ENABLED=0 go install github.com/google/go-containerregistry/cmd/crane@latest
 
+
+
+docker buildx build -o type=tar,dest=bootos.tar images/bootos

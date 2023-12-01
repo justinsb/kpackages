@@ -24,6 +24,6 @@ cp /etc/ssl/certs/ca-certificates.crt netboot/initrd/etc/ssl/certs/
 pushd netboot/initrd
 #find . | cpio -ov --format=newc | gzip -9 >../initramfz
 #find . -print0 | cpio --null -ov --format=newc | gzip -n >../initramfz
-find . -print0 | cpio --null -ov --format=newc  >../initramfz
+find . -print0 | cpio --null -ov --format=newc  > ../initramfz
 popd
 

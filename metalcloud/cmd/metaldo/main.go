@@ -17,13 +17,14 @@ func main() {
 }
 
 func run(ctx context.Context) error {
-	rootOptions := commands.RootOptions{
-		Server: "192.168.76.9:8080",
-	}
+	rootOptions := commands.RootOptions{}
+	rootOptions.InitDefaults()
+
 	root := &cobra.Command{
 		Use: "metaldo",
 	}
 	root.SilenceUsage = true
+	root.PersistentFlags().StringVar(&rootOptions.Host, "host", rootOptions.Host, "host to connect to")
 
 	commands.AddExecCommand(root, &rootOptions)
 	commands.AddPingCommand(root, &rootOptions)

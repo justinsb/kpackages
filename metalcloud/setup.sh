@@ -3,6 +3,7 @@
 set -e
 set -x
 
+export METAL_HOST=10.78.79.73
 
 go run ./cmd/metaldo ping
 go run ./cmd/metaldo exec -- /bin/modprobe t10_pi

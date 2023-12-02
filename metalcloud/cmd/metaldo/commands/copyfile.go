@@ -35,7 +35,7 @@ func RunCopyFileCommand(ctx context.Context, opt CopyFileOptions, args []string)
 		return err
 	}
 
-	if len(args) != 0 {
+	if len(args) != 2 {
 		return fmt.Errorf("expected exactly two arguments: <src> <dest>")
 	}
 

@@ -5,7 +5,8 @@ set -x
 
 mkdir -p netboot/initrd
 
-CGO_ENABLED=0 go build -o netboot/initrd/init ./cmd/metalagent
+CGO_ENABLED=0 go build -o netboot/initrd/init ./cmd/metalinit
+CGO_ENABLED=0 go build -o netboot/initrd/sbin/metalagent ./cmd/metalagent
 
 rm -rf netboot/initrd/bin/
 mkdir -p netboot/initrd/bin/

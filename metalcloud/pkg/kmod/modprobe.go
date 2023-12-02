@@ -182,7 +182,9 @@ func (p *moduleLoadPlan) addToPlan(moduleName string) error {
 	return nil
 }
 
-func LoadModules(moduleNames []string, deps *ModulesDep) error {
+type ModuleLoadFilterFunc func(moduleName string) bool
+
+func LoadModules(moduleNames []string, deps *ModulesDep, shouldLoad ModuleLoadFilterFunc) error {
 	plan := &moduleLoadPlan{
 		deps:  deps,
 		done:  make(map[string]bool),
@@ -198,6 +200,10 @@ func LoadModules(moduleNames []string, deps *ModulesDep) error {
 	}
 
 	for _, moduleName := range moduleNames {
+		if !shouldLoad(moduleName) {
+			log.Printf("skipping module %q", moduleName)
+			continue
+		}
 		if err := plan.addToPlan(moduleName); err != nil {
 			log.Printf("will not be able to load module %q: %v", moduleName, err)
 		}
@@ -209,6 +215,11 @@ func LoadModules(moduleNames []string, deps *ModulesDep) error {
 
 		for moduleName, info := range plan.queue {
 			if plan.done[moduleName] {
+				continue
+			}
+
+			if !shouldLoad(moduleName) {
+				log.Printf("skipping module %q", moduleName)
 				continue
 			}
 
@@ -246,5 +257,4 @@ func LoadModules(moduleNames []string, deps *ModulesDep) error {
 			return fmt.Errorf("not making progress loading modules")
 		}
 	}
-
 }

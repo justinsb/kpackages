@@ -2,7 +2,7 @@
 Description=Run agent
 
 [Service]
-ExecStart=/sbin/metalagent
+ExecStart=/sbin/metalagent --client-ca=/etc/metal/pki/client-ca.crt --server-cert=/etc/metal/pki/server.crt --server-key=/etc/metal/pki/server.key --listen=0.0.0.0:8443
 
 [Install]
 WantedBy=multi-user.target

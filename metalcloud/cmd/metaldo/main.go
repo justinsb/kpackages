@@ -25,6 +25,10 @@ func run(ctx context.Context) error {
 	}
 	root.SilenceUsage = true
 	root.PersistentFlags().StringVar(&rootOptions.Host, "host", rootOptions.Host, "host to connect to")
+	root.PersistentFlags().StringVar(&rootOptions.Name, "name", rootOptions.Name, "expected name of server (in certificate)")
+	root.PersistentFlags().StringVar(&rootOptions.ClientCertPath, "client-cert", rootOptions.ClientCertPath, "path to client certificate")
+	root.PersistentFlags().StringVar(&rootOptions.ClientKeyPath, "client-key", rootOptions.ClientKeyPath, "path to client key")
+	root.PersistentFlags().StringVar(&rootOptions.ServerCAPath, "server-ca", rootOptions.ServerCAPath, "path to server CA")
 
 	commands.AddCopyFileCommand(root, &rootOptions)
 	commands.AddExecCommand(root, &rootOptions)
